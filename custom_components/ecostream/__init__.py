@@ -198,6 +198,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = EcostreamDataUpdateCoordinator(hass, api)
     await coordinator.async_config_entry_first_refresh()
 
+    # Set unique device ID to prevent rediscovery duplicates
+    device_name = api._data.get("system", {}).get("system_name")
+    if device_name and entry.unique_id is None:
+        hass.config_entries.async_update_entry(entry, unique_id=device_name)    
+
     hass.data[DOMAIN][entry.entry_id] = api
     hass.data[DOMAIN]["ws_client"] = api
     entry.runtime_data = coordinator
