@@ -34,7 +34,24 @@ class EcostreamConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_zeroconf(self, discovery_info) -> FlowResult:
         """Handle automatic discovery via Zeroconf / mDNS."""
-        host = discovery_info.get("host")
+        # HA 2023.8+ → ZeroconfServiceInfo object
+        if hasattr(discovery_info, "host"):
+            host = discovery_info.host
+        else:
+            # Older HA — expected dict
+            host = discovery_info.get("host")
+
+        # Use host as temporary unique_id (will be replaced by system_name later)
+        await self.async_set_unique_id(host)
+        self._abort_if_unique_id_configured()
+
+        # Suggest configuration flow to the user instead of auto-adding
+        return self.async_show_form(
+            step_id="user",
+            description_placeholders={"host": host},
+            data_schema=vol.Schema({vol.Required(CONF_HOST, default=host): str}),
+        )
+
 
         # Use host as temporary unique_id (will be replaced by system_name later)
         await self.async_set_unique_id(host)
