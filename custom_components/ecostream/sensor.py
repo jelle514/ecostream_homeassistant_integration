@@ -32,8 +32,6 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     sensors = [
-        EcostreamFilterReplacementWarningSensor(coordinator, entry),
-        EcostreamFrostProtectionSensor(coordinator, entry),
         EcostreamQsetSensor(coordinator, entry),
         EcostreamModeTimeLeftSensor(coordinator, entry),
         EcostreamFanEHASpeed(coordinator, entry),
@@ -44,8 +42,6 @@ async def async_setup_entry(
         EcostreamTempEtaSensor(coordinator, entry),
         EcostreamTempOdaSensor(coordinator, entry),
         EcostreamTvocEtaSensor(coordinator, entry),
-        EcostreamScheduledEnabledSensor(coordinator, entry),
-        EcostreamSummerComfortEnabledSensor(coordinator, entry),
         EcostreamSummerComfortTemperatureSensor(coordinator, entry),
         EcostreamBypassPositionSensor(coordinator, entry),
         EcostreamBypassOverridePosition(coordinator, entry),
@@ -81,52 +77,6 @@ class EcostreamSensorBase(CoordinatorEntity, SensorEntity):
             manufacturer="Buva",
             model="EcoStream",
         )
-
-class EcostreamFrostProtectionSensor(EcostreamSensorBase):
-    """Sensor for frost protection status."""
-
-    @property
-    def unique_id(self):
-        return f"{self._entry_id}_frost_protection"
-
-    @property
-    def name(self):
-        return "Ecostream Frost Protection"
-
-    @property
-    def state(self):
-        return self.coordinator.data.get("status", {}).get("frost_protection")
-
-    @property
-    def state_class(self) -> SensorStateClass:
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def icon(self):
-        """Return the icon to use in the frontend, if any."""
-        return "mdi:snowflake-melt"
-
-class EcostreamFilterReplacementWarningSensor(EcostreamSensorBase):
-    """Sensor for the filter replacement warning."""
-
-    @property
-    def unique_id(self):
-        return f"{self._entry_id}_filter_replacement_warning"
-
-    @property
-    def name(self):
-        return "Ecostream Filter Replacement"
-
-    @property
-    def state(self):
-        errors = self.coordinator.data.get("status", {}).get("errors", [])
-
-        return any(error["type"] == "ERROR_FILTER" for error in errors)
-
-    @property
-    def icon(self):
-        """Return the icon to use in the frontend, if any."""
-        return "mdi:air-filter"
 
 class EcostreamFilterReplacementDateSensor(EcostreamSensorBase):
     """Sensor for Filter Replacement Date."""
@@ -429,40 +379,6 @@ class EcostreamTvocEtaSensor(EcostreamSensorBase):
     def icon(self):
         """Return the icon to use in the frontend, if any."""
         return "mdi:air-purifier"
-
-class EcostreamScheduledEnabledSensor(EcostreamSensorBase):
-    @property
-    def unique_id(self):
-        return f"{self._entry_id}_schedule_enabled"
-    
-    @property
-    def name(self):
-        return "Ecostream Schedule Enabled"
-
-    @property
-    def state(self):
-        return self.coordinator.data["config"]["schedule_enabled"]
-
-    @property
-    def icon(self):
-        return "mdi:toggle-switch-variant" if self.state else "mdi:toggle-switch-variant-off"
-
-class EcostreamSummerComfortEnabledSensor(EcostreamSensorBase):
-    @property
-    def unique_id(self):
-        return f"{self._entry_id}_summer_comfort_enabled"
-    
-    @property
-    def name(self):
-        return "Ecostream Summer Comfort Enabled"
-
-    @property
-    def state(self):
-        return self.coordinator.data["config"]["sum_com_enabled"]
-
-    @property
-    def icon(self):
-        return "mdi:toggle-switch-variant" if self.state else "mdi:toggle-switch-variant-off"
 
 class EcostreamSummerComfortTemperatureSensor(EcostreamSensorBase):
     @property
